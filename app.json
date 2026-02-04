@@ -1,0 +1,29 @@
+{
+  "expo": {
+    "name": "Sigalli",
+    "slug": "sigalli",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#6254e7"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sigalli.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#6254e7"
+      },
+      "package": "com.sigalli.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
