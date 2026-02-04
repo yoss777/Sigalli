@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontFamily, Shadows } from '../constants/theme';
 
@@ -26,12 +27,13 @@ const SettingItem: React.FC<SettingItemProps> = ({ icon, label, value, color = C
 );
 
 export const SettingsScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
           <Text style={styles.headerTitle}>Profil</Text>
         </View>
 
@@ -80,7 +82,7 @@ export const SettingsScreen: React.FC = () => {
         </TouchableOpacity>
 
         <Text style={styles.footer}>Sigalli S.A. - Libreville, Gabon</Text>
-        <Text style={styles.footerVersion}>Version 1.0.0 - Développé par Declic Consulting</Text>
+        <Text style={styles.footerVersion}>Version 1.0.0</Text>
 
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -95,7 +97,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + Spacing.md : 60,
     paddingBottom: Spacing.md,
   },
   headerTitle: {

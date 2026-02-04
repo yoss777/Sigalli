@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontFamily, Shadows } from '../constants/theme';
 import { stores, revenueByStore, formatCurrency } from '../data/mockData';
 import { Store } from '../types';
 
 export const StoresScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
 
   const activeStores = stores.filter(s => s.isActive);
@@ -87,10 +89,8 @@ export const StoresScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
         <Text style={styles.headerTitle}>Magasins</Text>
         <Text style={styles.headerSubtitle}>Réseau de distribution Sigalli</Text>
       </View>
@@ -140,7 +140,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + Spacing.md : 60,
     paddingBottom: Spacing.md,
   },
   headerTitle: {

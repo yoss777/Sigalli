@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontFamily, Shadows } from '../constants/theme';
 import { BarChart } from '../components/BarChart';
@@ -10,6 +11,7 @@ import { monthlyRevenue, revenueByCategory, revenueByStore, topProducts, dailyRe
 type Period = 'week' | 'month' | 'year';
 
 export const AnalyticsScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [period, setPeriod] = useState<Period>('month');
 
   const lineData = monthlyRevenue.map(m => ({
@@ -45,10 +47,9 @@ export const AnalyticsScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
           <Text style={styles.headerTitle}>Analytiques</Text>
           <Text style={styles.headerSubtitle}>Analyse des performances de vente</Text>
         </View>
@@ -168,7 +169,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + Spacing.md : 60,
     paddingBottom: Spacing.md,
   },
   headerTitle: {

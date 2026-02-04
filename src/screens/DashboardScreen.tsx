@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, ScrollView, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontFamily, Shadows } from '../constants/theme';
 import { StatCard } from '../components/StatCard';
@@ -11,6 +12,7 @@ import { HorizontalBarChart } from '../components/HorizontalBarChart';
 import { dashboardStats, recentTransactions, formatCurrency, monthlyRevenue, revenueByCategory, revenueByStore } from '../data/mockData';
 
 export const DashboardScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const barData = monthlyRevenue.map(m => ({
     label: m.month.split(' ')[0],
     value: m.revenue,
@@ -24,10 +26,9 @@ export const DashboardScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View style={styles.header}>
+        <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
           <View>
             <Text style={styles.greeting}>Bonjour,</Text>
             <Text style={styles.companyName}>Sigalli</Text>
@@ -151,7 +152,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight! + Spacing.md : 60,
     paddingBottom: Spacing.md,
   },
   greeting: {

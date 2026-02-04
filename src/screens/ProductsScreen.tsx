@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
-import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, StatusBar, Platform, Modal } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, TextInput, StyleSheet, Modal } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, FontSize, FontFamily, Shadows } from '../constants/theme';
 import { products } from '../data/mockData';
@@ -21,6 +22,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export const ProductsScreen: React.FC = () => {
+  const insets = useSafeAreaInsets();
   const [selectedCategory, setSelectedCategory] = useState<'Tous' | ProductCategory>('Tous');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -70,10 +72,8 @@ export const ProductsScreen: React.FC = () => {
 
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="dark-content" backgroundColor={Colors.background} />
-
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { paddingTop: insets.top + Spacing.md }]}>
         <Text style={styles.headerTitle}>Produits</Text>
         <Text style={styles.headerSubtitle}>{products.length} produits au catalogue</Text>
       </View>
@@ -237,7 +237,6 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: Spacing.lg,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + Spacing.md : 60,
     paddingBottom: Spacing.sm,
   },
   headerTitle: {
