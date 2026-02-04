@@ -1,14 +1,22 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, FontSize, FontFamily, BorderRadius, Shadows } from '../constants/theme';
+import { formatCurrency } from '../data/mockData';
 
 interface DonutChartProps {
   data: { label: string; value: number; color: string }[];
   title: string;
   size?: number;
+  formatValue?: (value: number) => string;
 }
 
-export const DonutChart: React.FC<DonutChartProps> = ({ data, title, size = 140 }) => {
+export const DonutChart: React.FC<DonutChartProps> = ({
+  data,
+  title,
+  size = 140,
+  formatValue = formatCurrency,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const total = data.reduce((sum, d) => sum + d.value, 0);
   const strokeWidth = 22;
 
@@ -37,6 +45,7 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, title, size = 140 
             const percentage = total > 0 ? item.value / total : 0;
             const rotation = cumulativePercentage * 360 - 90;
             cumulativePercentage += percentage;
+            const isSelected = selectedIndex === index;
 
             return (
               <View
@@ -47,13 +56,14 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, title, size = 140 
                     width: size,
                     height: size,
                     borderRadius: size / 2,
-                    borderWidth: strokeWidth,
+                    borderWidth: isSelected ? strokeWidth + 4 : strokeWidth,
                     borderColor: 'transparent',
                     borderTopColor: item.color,
                     borderRightColor: percentage > 0.25 ? item.color : 'transparent',
                     borderBottomColor: percentage > 0.5 ? item.color : 'transparent',
                     borderLeftColor: percentage > 0.75 ? item.color : 'transparent',
                     transform: [{ rotate: `${rotation}deg` }],
+                    opacity: selectedIndex !== null && !isSelected ? 0.4 : 1,
                   },
                 ]}
               />
@@ -71,20 +81,47 @@ export const DonutChart: React.FC<DonutChartProps> = ({ data, title, size = 140 
                 left: strokeWidth,
               },
             ]}
-          />
+          >
+            {selectedIndex !== null && (
+              <>
+                <Text style={styles.centerValue}>
+                  {Math.round((data[selectedIndex].value / total) * 100)}%
+                </Text>
+              </>
+            )}
+          </View>
         </View>
         <View style={styles.legend}>
-          {data.map((item, index) => (
-            <View key={index} style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: item.color }]} />
-              <View style={styles.legendTextWrap}>
-                <Text style={styles.legendLabel} numberOfLines={1}>{item.label}</Text>
-                <Text style={styles.legendValue}>
-                  {total > 0 ? Math.round((item.value / total) * 100) : 0}%
-                </Text>
-              </View>
-            </View>
-          ))}
+          {data.map((item, index) => {
+            const isSelected = selectedIndex === index;
+            return (
+              <TouchableOpacity
+                key={index}
+                style={[styles.legendItem, isSelected && styles.legendItemSelected]}
+                activeOpacity={0.7}
+                onPress={() => setSelectedIndex(isSelected ? null : index)}
+              >
+                <View style={[styles.legendDot, { backgroundColor: item.color }]} />
+                <View style={styles.legendTextWrap}>
+                  <Text
+                    style={[styles.legendLabel, isSelected && { fontFamily: FontFamily.bodySemiBold }]}
+                    numberOfLines={1}
+                  >
+                    {item.label}
+                  </Text>
+                  {isSelected ? (
+                    <Text style={[styles.legendValue, { color: item.color }]}>
+                      {formatValue(item.value)}
+                    </Text>
+                  ) : (
+                    <Text style={styles.legendValue}>
+                      {total > 0 ? Math.round((item.value / total) * 100) : 0}%
+                    </Text>
+                  )}
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
     </View>
@@ -118,6 +155,13 @@ const styles = StyleSheet.create({
   centerHole: {
     position: 'absolute',
     backgroundColor: Colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  centerValue: {
+    fontFamily: FontFamily.heading,
+    fontSize: FontSize.lg,
+    color: Colors.text,
   },
   legend: {
     flex: 1,
@@ -127,6 +171,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: Spacing.sm,
+    paddingVertical: 2,
+    paddingHorizontal: 4,
+    borderRadius: BorderRadius.sm,
+  },
+  legendItemSelected: {
+    backgroundColor: Colors.background,
   },
   legendDot: {
     width: 10,

@@ -1,17 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, FontSize, FontFamily, BorderRadius, Shadows } from '../constants/theme';
+import { formatCurrency } from '../data/mockData';
 
 interface LineChartProps {
   data: { label: string; value: number }[];
   title: string;
   height?: number;
   color?: string;
+  formatValue?: (value: number) => string;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export const LineChart: React.FC<LineChartProps> = ({ data, title, height = 180, color = Colors.primary }) => {
+export const LineChart: React.FC<LineChartProps> = ({
+  data,
+  title,
+  height = 180,
+  color = Colors.primary,
+  formatValue = formatCurrency,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const chartWidth = SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2;
   const chartHeight = height - 30;
   const maxValue = Math.max(...data.map(d => d.value), 1);
@@ -33,6 +42,15 @@ export const LineChart: React.FC<LineChartProps> = ({ data, title, height = 180,
   return (
     <View style={[styles.container, Shadows.small]}>
       <Text style={styles.title}>{title}</Text>
+
+      {/* Tooltip */}
+      {selectedIndex !== null && (
+        <View style={styles.tooltip}>
+          <Text style={styles.tooltipLabel}>{data[selectedIndex].label}</Text>
+          <Text style={styles.tooltipValue}>{formatValue(data[selectedIndex].value)}</Text>
+        </View>
+      )}
+
       <View style={[styles.chartArea, { height: chartHeight, width: chartWidth }]}>
         {/* Grid */}
         {gridLines.map((y, i) => (
@@ -89,31 +107,52 @@ export const LineChart: React.FC<LineChartProps> = ({ data, title, height = 180,
           );
         })}
 
-        {/* Points */}
-        {points.map((point, index) => (
-          <React.Fragment key={`point-${index}`}>
-            <View
+        {/* Touch targets + Points */}
+        {points.map((point, index) => {
+          const isSelected = selectedIndex === index;
+          return (
+            <TouchableOpacity
+              key={`point-${index}`}
               style={[
-                styles.pointOuter,
+                styles.touchTarget,
                 {
-                  left: point.x - 5,
-                  top: point.y - 5,
-                  borderColor: color,
+                  left: point.x - 16,
+                  top: point.y - 16,
                 },
               ]}
-            />
-            <View
-              style={[
-                styles.pointInner,
-                {
-                  left: point.x - 3,
-                  top: point.y - 3,
-                  backgroundColor: color,
-                },
-              ]}
-            />
-          </React.Fragment>
-        ))}
+              activeOpacity={0.7}
+              onPress={() => setSelectedIndex(isSelected ? null : index)}
+            >
+              <View
+                style={[
+                  styles.pointOuter,
+                  {
+                    borderColor: color,
+                    width: isSelected ? 14 : 10,
+                    height: isSelected ? 14 : 10,
+                    borderRadius: isSelected ? 7 : 5,
+                    borderWidth: isSelected ? 3 : 2,
+                  },
+                ]}
+              />
+            </TouchableOpacity>
+          );
+        })}
+
+        {/* Selected vertical line */}
+        {selectedIndex !== null && (
+          <View
+            style={[
+              styles.selectedLine,
+              {
+                left: points[selectedIndex].x,
+                top: points[selectedIndex].y,
+                height: chartHeight - paddingBottom - points[selectedIndex].y,
+                backgroundColor: color + '40',
+              },
+            ]}
+          />
+        )}
       </View>
 
       {/* Labels */}
@@ -142,11 +181,29 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.headingMedium,
     fontSize: FontSize.md,
     color: Colors.text,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  tooltip: {
+    backgroundColor: Colors.black,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    alignSelf: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  tooltipLabel: {
+    fontFamily: FontFamily.body,
+    fontSize: FontSize.xs,
+    color: Colors.white + 'CC',
+  },
+  tooltipValue: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
   },
   chartArea: {
     position: 'relative',
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   gridLine: {
     position: 'absolute',
@@ -161,19 +218,21 @@ const styles = StyleSheet.create({
     height: 2.5,
     borderRadius: 1.25,
   },
-  pointOuter: {
+  touchTarget: {
     position: 'absolute',
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    borderWidth: 2,
+    width: 32,
+    height: 32,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
+  pointOuter: {
     backgroundColor: Colors.surface,
   },
-  pointInner: {
+  selectedLine: {
     position: 'absolute',
-    width: 6,
-    height: 6,
-    borderRadius: 3,
+    width: 1.5,
+    borderRadius: 1,
   },
   labelsRow: {
     flexDirection: 'row',

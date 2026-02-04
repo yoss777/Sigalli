@@ -1,17 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
 import { Colors, Spacing, FontSize, FontFamily, BorderRadius, Shadows } from '../constants/theme';
+import { formatCurrency } from '../data/mockData';
 
 interface BarChartProps {
   data: { label: string; value: number }[];
   title: string;
   height?: number;
   color?: string;
+  formatValue?: (value: number) => string;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 
-export const BarChart: React.FC<BarChartProps> = ({ data, title, height = 200, color = Colors.primary }) => {
+export const BarChart: React.FC<BarChartProps> = ({
+  data,
+  title,
+  height = 200,
+  color = Colors.primary,
+  formatValue = formatCurrency,
+}) => {
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const chartWidth = SCREEN_WIDTH - Spacing.lg * 2 - Spacing.md * 2;
   const maxValue = Math.max(...data.map(d => d.value), 1);
   const barWidth = Math.max(10, (chartWidth - data.length * 4) / data.length);
@@ -19,12 +28,27 @@ export const BarChart: React.FC<BarChartProps> = ({ data, title, height = 200, c
   return (
     <View style={[styles.container, Shadows.small]}>
       <Text style={styles.title}>{title}</Text>
+
+      {/* Tooltip */}
+      {selectedIndex !== null && (
+        <View style={styles.tooltip}>
+          <Text style={styles.tooltipLabel}>{data[selectedIndex].label}</Text>
+          <Text style={styles.tooltipValue}>{formatValue(data[selectedIndex].value)}</Text>
+        </View>
+      )}
+
       <View style={[styles.chartArea, { height }]}>
         <View style={styles.barsRow}>
           {data.map((item, index) => {
             const barHeight = (item.value / maxValue) * (height - 28);
+            const isSelected = selectedIndex === index;
             return (
-              <View key={index} style={styles.barCol}>
+              <TouchableOpacity
+                key={index}
+                style={styles.barCol}
+                activeOpacity={0.7}
+                onPress={() => setSelectedIndex(isSelected ? null : index)}
+              >
                 <View style={[styles.barWrapper, { height: height - 28 }]}>
                   <View
                     style={[
@@ -33,15 +57,24 @@ export const BarChart: React.FC<BarChartProps> = ({ data, title, height = 200, c
                         height: barHeight,
                         width: barWidth,
                         backgroundColor: color,
-                        opacity: 0.75 + (item.value / maxValue) * 0.25,
+                        opacity: isSelected ? 1 : 0.65 + (item.value / maxValue) * 0.25,
                       },
                     ]}
                   />
+                  {isSelected && (
+                    <View style={[styles.selectedIndicator, { backgroundColor: color }]} />
+                  )}
                 </View>
-                <Text style={styles.barLabel} numberOfLines={1}>
+                <Text
+                  style={[
+                    styles.barLabel,
+                    isSelected && { color: color, fontFamily: FontFamily.bodySemiBold },
+                  ]}
+                  numberOfLines={1}
+                >
                   {item.label.slice(0, 3)}
                 </Text>
-              </View>
+              </TouchableOpacity>
             );
           })}
         </View>
@@ -62,7 +95,25 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.headingMedium,
     fontSize: FontSize.md,
     color: Colors.text,
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xs,
+  },
+  tooltip: {
+    backgroundColor: Colors.black,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    alignSelf: 'flex-start',
+    marginBottom: Spacing.sm,
+  },
+  tooltipLabel: {
+    fontFamily: FontFamily.body,
+    fontSize: FontSize.xs,
+    color: Colors.white + 'CC',
+  },
+  tooltipValue: {
+    fontFamily: FontFamily.bodySemiBold,
+    fontSize: FontSize.sm,
+    color: Colors.white,
   },
   chartArea: {
     justifyContent: 'flex-end',
@@ -84,6 +135,12 @@ const styles = StyleSheet.create({
   bar: {
     borderRadius: 4,
     minHeight: 2,
+  },
+  selectedIndicator: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
   },
   barLabel: {
     fontFamily: FontFamily.body,

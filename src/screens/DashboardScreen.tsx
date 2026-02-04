@@ -7,7 +7,8 @@ import { SectionHeader } from '../components/SectionHeader';
 import { TransactionItem } from '../components/TransactionItem';
 import { BarChart } from '../components/BarChart';
 import { DonutChart } from '../components/DonutChart';
-import { dashboardStats, recentTransactions, formatCurrency, monthlyRevenue, revenueByCategory } from '../data/mockData';
+import { HorizontalBarChart } from '../components/HorizontalBarChart';
+import { dashboardStats, recentTransactions, formatCurrency, monthlyRevenue, revenueByCategory, revenueByStore } from '../data/mockData';
 
 export const DashboardScreen: React.FC = () => {
   const barData = monthlyRevenue.map(m => ({
@@ -93,6 +94,15 @@ export const DashboardScreen: React.FC = () => {
         <DonutChart
           data={donutData}
           title="Revenus par catégorie"
+        />
+
+        {/* Store Performance */}
+        <HorizontalBarChart
+          data={revenueByStore.map(s => ({
+            label: s.storeName,
+            value: s.revenue,
+          }))}
+          title="Performance des magasins"
         />
 
         {/* Top Products */}
